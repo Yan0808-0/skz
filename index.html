@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STRAY KIDS - 命運之輪 24張占卜</title>
+  <!-- 引入乾淨大氣的 Montserrat 字體與 Cinzel 襯線體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: radial-gradient(circle, #1a1a1a 0%, #0d0d0d 100%);
+      font-family: 'Montserrat', sans-serif;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #smoke-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* 金色文字樣式 */
+    .gold-text {
+      background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 15px rgba(186, 140, 42, 0.3);
+    }
+
+    /* 1. 儀式感首頁 (Intro Overlay) */
+    #intro-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0d0d0d;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    /* 背景相片輪迴容器 */
+    .slideshow-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 101;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.8s ease-in-out;
+      filter: brightness(0.3) contrast(1.1);
+    }
+
+    .slide.active {
+      opacity: 1;
+    }
+
+    .intro-content {
+      position: relative;
+      z-index: 102;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* 乾淨、正常且大氣的 STRAY KIDS 字體 */
+    .normal-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.6rem;
+      letter-spacing: 0.35rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    /* 一開始中間那排 STAY 經典標語 */
+    .intro-stay-slogan {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin: 15px 0;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* START 實心金色按鈕 */
+    .start-btn {
+      background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #aa771c 100%);
+      border: none;
+      color: #000000;
+      padding: 13px 55px;
+      font-size: 0.95rem;
+      letter-spacing: 4px;
+      border-radius: 35px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(191, 149, 63, 0.4);
+    }
+
+    .start-btn:hover {
+      background: linear-gradient(135deg, #fcf6ba 0%, #bf953f 50%, #aa771c 100%);
+      transform: scale(1.05);
+    }
+
+    /* 2. 主抽卡畫面容器 */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 25px;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px 20px;
+    }
+
+    /* 右上角迷你黑膠唱片按鈕 */
+    #music-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 46px;
+      height: 46px;
+      background: radial-gradient(circle, #2c2c2c 0%, #050505 80%);
+      border: 2px solid #bf953f; /* 金色邊框 */
+      border-radius: 50%;
+      z-index: 99;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(191, 149, 63, 0.4);
+      display: none; /* 進入卡牌畫面後才會顯示 */
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* 黑膠唱片內圈金色標籤 */
+    #music-toggle::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #aa771c 100%);
+      border-radius: 50%;
+      border: 1px solid #000;
+    }
+
+    /* 唱片中心的小圓孔 */
+    #music-toggle::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #0d0d0d;
+      border-radius: 50%;
+    }
+
+    /* 唱片旋轉起動畫 */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 播放中：旋轉 */
+    #music-toggle.playing {
+      animation: spin 3.5s linear infinite;
+      opacity: 1;
+    }
+
+    /* 暫停：停止旋轉且微暗 */
+    #music-toggle.paused {
+      animation-play-state: paused;
+      opacity: 0.6;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    /* 3D 卡牌 */
+    .card-box {
+      perspective: 1000px;
+      width: 260px;
+      height: 420px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-box.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 15px;
+    }
+
+    /* 背面：發光純白圈 SKZ */
+    .card-back {
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    }
+
+    .compass-logo {
+      width: 110px;
+      height: 110px;
+      border: 2px solid rgba(255, 255, 255, 0.9); 
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #ffffff;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.25);
+    }
+
+    /* 圈圈下面「按的小字」 */
+    .touch-hint {
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 18px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* 正面 (彩色照片) */
+    .card-front {
+      transform: rotateY(180deg);
+      background: linear-gradient(135deg, #222222 0%, #111111 100%);
+      align-items: center;
+      text-align: center;
+    }
+
+    .member-photo {
+      width: 100%;
+      height: 220px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .card-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .card-meaning {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #cccccc;
+      font-weight: 300;
+      margin-top: 5px;
+    }
+
+    /* 重新抽牌按鈕：實心金色 */
+    .btn {
+      background: linear-gradient(135deg, #bf953f 0%, #d4af37 50%, #aa771c 100%);
+      border: none;
+      color: #000000;
+      padding: 12px 45px;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      border-radius: 35px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(191, 149, 63, 0.4);
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, #fcf6ba 0%, #bf953f 50%, #aa771c 100%);
+      transform: translateY(-2px);
+    }
+
+    /* 底部標語：安全相對定位，防阻擋 */
+    .footer-slogan {
+      position: relative;
+      margin-top: 25px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+      padding: 0 15px;
+      line-height: 1.6;
+      font-weight: 400;
+      z-index: 10;
+      opacity: 0.6;
+    }
+
+    /* 隱藏的 YouTube API 播放容器 */
+    #bg-music-container {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 煙霧背景 -->
+  <canvas id="smoke-canvas"></canvas>
+
+  <!-- 隱藏的 YouTube 播放元件 -->
+  <div id="bg-music-container">
+    <div id="yt-player"></div>
+  </div>
+
+  <!-- 右上角迷你黑膠唱片控制鈕 -->
+  <div id="music-toggle" class="playing" onclick="toggleMusic()"></div>
+
+  <!-- 1. 儀式感首頁 (Intro Screen) -->
+  <div id="intro-screen">
+    <div class="slideshow-container" id="slideshow">
+      <img class="slide active" src="https://i.postimg.cc/vZXJcNqR/IMG-0768.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/BnNrXVYF/IMG-0769.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/52ph6R7j/IMG-0770.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/mrJ69fQL/IMG-0771.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/hjmZbyrM/IMG-0772.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/mgbxZsSJ/IMG-0773.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/dVnbLxHk/IMG-0788.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/Qdn6LGY0/IMG-0789.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/HkpGWg2p/IMG-0790.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/nrB8rVgf/IMG-0792.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/1zfj45VJ/IMG-0793.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/ZKH7cyr2/IMG-0794.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/PqpST3Bk/IMG-0761.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/KYk0xqdm/IMG-0762.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/pdhsRGgH/IMG-0763.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/wj3VQ4xB/IMG-0784.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/MK95RJSd/IMG-0785.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/m2mjMW4W/IMG-0786.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/FKdTNW29/IMG-0823.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/6Q2MtjD6/IMG-0824.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/6Q2MtjD5/IMG-0825.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/W4BX3mvL/IMG-0827.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/xdwtCG29/IMG-0828.jpg" alt="slide">
+      <img class="slide" src="https://i.postimg.cc/N03pM8cF/IMG-0829.jpg" alt="slide">
+    </div>
+    
+    <div class="intro-content">
+      <!-- 大氣乾淨的正常字體 -->
+      <div class="normal-title gold-text">STRAY KIDS</div>
+      <div style="font-size: 0.8rem; letter-spacing: 5px; color: #888; font-weight: 600; text-transform: uppercase; margin-top: -10px;">ORACLE CARDS</div>
+      
+      <!-- 中間加入經典的 STAY 標語 -->
+      <div class="intro-stay-slogan gold-text">
+        " You make Stray Kids stay "<br>
+        <span style="font-size: 0.65rem; opacity: 0.7; letter-spacing: 1px;">Everywhere all around the world</span>
+      </div>
+      
+      <button class="start-btn" onclick="enterApp()">START</button>
+    </div>
+  </div>
+
+  <!-- 2. 主抽卡畫面 -->
+  <div class="container">
+    <!-- 主畫面 STRAY KIDS 也採用乾淨大氣的正常字體 -->
+    <h1 class="normal-title gold-text" style="font-size: 2.3rem;">STRAY KIDS</h1>
+    
+    <div class="card-box" id="tarot-card" onclick="flipCard()">
+      <div class="card-inner">
+        <!-- 背面：白色發光圓圈 + 圈圈下面按的小字 -->
+        <div class="card-face card-back">
+          <div class="compass-logo">SKZ</div>
+          <div class="touch-hint">Touch to draw</div>
+        </div>
+        <!-- 正面 -->
+        <div class="card-face card-front">
+          <img id="card-img" class="member-photo" src="" alt="成員照片">
+          <div>
+            <div id="card-title" class="card-title gold-text">CARD TITLE</div>
+            <div id="card-subtitle" class="gold-text" style="font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 5px; font-weight:600;">SUBTITLE</div>
+            <p id="card-desc" class="card-meaning">DESCRIPTION</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重新抽牌按鈕 -->
+    <button class="btn" onclick="drawNewCard()">重新抽牌</button>
+
+    <!-- 底部標語 -->
+    <div class="footer-slogan gold-text">
+      stray kids everywhere all around the world you make stray kids stay
+    </div>
+  </div>
+
+  <script>
+    // 24張卡片數據庫
+    const cardsData = [
+      { name: "黃鉉辰 (Hyunjin)", title: "THE EMPRESS", subtitle: "藝術家", desc: "美感、豐盛、創造力的巔峰。你的個人魅力正在最大化，大膽展现美吧。", img: "https://i.postimg.cc/vZXJcNqR/IMG-0768.jpg" },
+      { name: "黃鉉辰 (Hyunjin)", title: "THE DEVIL", subtitle: "執念", desc: "誘惑、致命吸引力與執著。你對某件事物有極深的渴望，注意不要迷失自我。", img: "https://i.postimg.cc/BnNrXVYF/IMG-0769.jpg" },
+      { name: "黃鉉辰 (Hyunjin)", title: "THE HANGED MAN", subtitle: "倒吊人", desc: "換個視角、考驗與等待。有些事情換個角度看，會發現完全不同的美麗世界。", img: "https://i.postimg.cc/52ph6R7j/IMG-0770.jpg" },
+      { name: "李旻浩 (Lee Know)", title: "WHEEL OF FORTUNE", subtitle: "貓之漫步", desc: "順應變化、隨遇而安。生活偶爾失控也沒關係，放輕鬆，命運自有它的軌道。", img: "https://i.postimg.cc/mrJ69fQL/IMG-0771.jpg" },
+      { name: "李旻浩 (Lee Know)", title: "THE HIGH PRIESTESS", subtitle: "女祭司", desc: "直覺、靜止與高度洞察。靜下心來，不要被外界噪音干擾，答案就在心中。", img: "https://i.postimg.cc/hjmZbyrM/IMG-0772.jpg" },
+      { name: "李旻浩 (Lee Know)", title: "JUSTICE", subtitle: "審判者", desc: "理性、界線與決斷。用冷靜客觀的角度看待現狀，做出最乾淨俐落的決定。", img: "https://i.postimg.cc/mgbxZsSJ/IMG-0773.jpg" },
+      { name: "徐彰彬 (Changbin)", title: "STRENGTH", subtitle: "突破者", desc: "突破瓶頸、無所畏懼與自信。沒有任何阻礙能擋住你此時的爆發力。", img: "https://i.postimg.cc/dVnbLxHk/IMG-0788.jpg" },
+      { name: "徐彰彬 (Changbin)", title: "THE LOVERS", subtitle: "真摯之音", desc: "真誠、人際和諧。用最真實的自己去感染身邊的人，散發溫慢光芒。", img: "https://i.postimg.cc/Qdn6LGY0/IMG-0789.jpg" },
+      { name: "徐彰彬 (Changbin)", title: "TEMPERANCE", subtitle: "淬鍊者", desc: "堅持、內部力量。雖然過程需要時間磨練，但你正在累積驚人的能量。", img: "https://i.postimg.cc/HkpGWg2p/IMG-0790.jpg" },
+      { name: "方燦 (Bang Chan)", title: "THE EMPEROR", subtitle: "領航者", desc: "主控、責任與承擔。代表你目前擁有掌控大局的力量，前方有清晰的目標。", img: "https://i.postimg.cc/nrB8rVgf/IMG-0792.jpg" },
+      { name: "方燦 (Bang Chan)", title: "THE MAGICIAN", subtitle: "造物主", desc: "創造力、資源整合與天撥。你手中已握有所有成功的工具，只差動手實踐。", img: "https://i.postimg.cc/1zfj45VJ/IMG-0793.jpg" },
+      { name: "方燦 (Bang Chan)", title: "THE CHARIOT", subtitle: "避風港", desc: "守護、意志力與前進。背後有強大的後盾，可以無所畏懼地往前衝。", img: "https://i.postimg.cc/ZKH7cyr2/IMG-0794.jpg" },
+      { name: "李龍馥 (Felix)", title: "THE STAR", subtitle: "希望之星", desc: "療癒、光明、無菌的純淨。在黑暗與煙霧中，你就是那顆指引眾人的星星。", img: "https://i.postimg.cc/PqpST3Bk/IMG-0761.jpg" },
+      { name: "李龍馥 (Felix)", title: "THE JUDGMENT", subtitle: "低音迴響", desc: "覺醒、宣告與感召。像他的深沉低音一樣，你的聲音將會被聽見，命運在召喚你。", img: "https://i.postimg.cc/KYk0xqdm/IMG-0762.jpg" },
+      { name: "李龍馥 (Felix)", title: "THE SUN", subtitle: "純真天使", desc: "純粹、溫暖與生命力。保持你的善良與熱情，能驅散生活一切陰霾。", img: "https://i.postimg.cc/pdhsRGgH/IMG-0763.jpg" },
+      { name: "韓知城 (HAN)", title: "THE FOOL", subtitle: "冒險家", desc: "自由、無限潛能。不要害怕未知的起點，跳下去，命運會接住你。", img: "https://i.postimg.cc/wj3VQ4xB/IMG-0784.jpg" },
+      { name: "韓知城 (HAN)", title: "THE MOON", subtitle: "狂想曲", desc: "潛意識、靈感迸發與不確定性。迷惘是創作的養分，擁抱你腦中的天馬行空。", img: "https://i.postimg.cc/MK95RJSd/IMG-0785.jpg" },
+      { name: "韓知城 (HAN)", title: "THE HERMIT", subtitle: "隱士", desc: "內省、獨處與沉澱。此時適合退回自己的小世界，好好充電與對話。", img: "https://i.postimg.cc/m2mjMW4W/IMG-0786.jpg" },
+      { name: "金昇玟 (Seungmin)", title: "THE HIEROPHANT", subtitle: "秩序守護者", desc: "規律、傳承。按照計劃一步步走，最穩定的節奏往往能帶來最完美的副歌。", img: "https://i.postimg.cc/FKdTNW29/IMG-0823.jpg" },
+      { name: "金昇玟 (Seungmin)", title: "TEMPERANCE", subtitle: "澄淨之水", desc: "淨化、情緒平衡與療癒。讓繁雜的心平靜下來，如清澈的泉水洗滌日常的焦慮。", img: "https://i.postimg.cc/6Q2MtjD6/IMG-0824.jpg" },
+      { name: "金昇玟 (Seungmin)", title: "REBIRTH", subtitle: "逆襲", desc: "打破常規、驚喜與蛻變。打破別人對你的既定印象，展現你隱藏的硬核實力。", img: "https://i.postimg.cc/6Q2MtjD5/IMG-0825.jpg" },
+      { name: "梁精寅 (I.N)", title: "THE SUN", subtitle: "命運主宰", desc: "自信、主導權。不要因為年紀或資歷看輕自己，你就是自己人生的「霸氣忙內」。", img: "https://i.postimg.cc/W4BX3mvL/IMG-0827.jpg" },
+      { name: "梁精寅 (I.N)", title: "THE WORLD", subtitle: "白夜", desc: "圓滿、階段性成功。你付出的努力即將開花結果，迎來最完美的白夜。", img: "https://i.postimg.cc/xdwtCG29/IMG-0828.jpg" },
+      { name: "梁精寅 (I.N)", title: "REBIRTH", subtitle: "蛻變狐仙", desc: "告別過去、成熟與華麗轉身。青澀已逝，你正在迎來更強大、更有魅力的全新自我。", img: "https://i.postimg.cc/N03pM8cF/IMG-0829.jpg" }
+    ];
+
+    // 背景輪播邏輯
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    setInterval(() => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }, 3000);
+
+    let isFlipped = false;
+    const musicToggle = document.getElementById('music-toggle');
+    let ytPlayer;
+
+    // 1. 載入 YouTube IFrame API
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // 2. 當 YouTube 播放器準備好時初始化
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '0',
+        width: '0',
+        videoId: 'Q7IFjVUUb_E', // Stray Kids - "RUN IT"
+        playerVars: {
+          'autoplay': 0,
+          'loop': 1,
+          'playlist': 'Q7IFjVUUb_E', // 設置循環所需的同一個 Video ID
+          'controls': 0,
+          'showinfo': 0,
+          'rel': 0,
+          'modestbranding': 1
+        },
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // 💡 在這裡控制預設音量（0是靜音，100是最大聲）
+      // 設定在 15 左右，呈現極佳的低調背景墊音氣氛
+      ytPlayer.setVolume(15);
+    }
+
+    // 進入占卜畫面
+    function enterApp() {
+      // 1. 隱藏首頁
+      const intro = document.getElementById('intro-screen');
+      intro.style.opacity = '0';
+      setTimeout(() => {
+        intro.style.visibility = 'hidden';
+      }, 800);
+
+      // 2. 顯示右上角迷你黑膠唱片按鈕
+      musicToggle.style.display = 'flex';
+
+      // 3. 啟動背景音樂
+      if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        ytPlayer.playVideo();
+        musicToggle.className = 'playing'; // 開始旋轉
+      } else {
+        // 如果 API 還沒加載完畢，嘗試等待 1 秒後播放
+        setTimeout(() => {
+          if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+            ytPlayer.playVideo();
+            musicToggle.className = 'playing';
+          }
+        }, 1000);
+      }
+
+      // 4. 卡片重置
+      const cardBox = document.getElementById('tarot-card');
+      cardBox.classList.remove('flipped');
+      isFlipped = false;
+      setRandomCard();
+    }
+
+    // 控制音樂開關（點擊黑膠唱片）
+    function toggleMusic() {
+      if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+        const state = ytPlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          ytPlayer.pauseVideo();
+          musicToggle.className = 'paused'; // 暫停旋轉、微暗
+        } else {
+          ytPlayer.playVideo();
+          musicToggle.className = 'playing'; // 恢復旋轉
+        }
+      }
+    }
+
+    // 隨機選卡片
+    function setRandomCard() {
+      const randomIndex = Math.floor(Math.random() * cardsData.length);
+      const selectedCard = cardsData[randomIndex];
+
+      document.getElementById('card-img').src = selectedCard.img;
+      document.getElementById('card-title').textContent = selectedCard.title;
+      document.getElementById('card-subtitle').textContent = `${selectedCard.name} · ${selectedCard.subtitle}`;
+      document.getElementById('card-desc').textContent = selectedCard.desc;
+    }
+
+    // 重新抽牌
+    function drawNewCard() {
+      const cardBox = document.getElementById('tarot-card');
+      if (isFlipped) {
+        cardBox.classList.remove('flipped');
+        isFlipped = false;
+        setTimeout(setRandomCard, 500);
+      } else {
+        setRandomCard();
+      }
+    }
+
+    // 翻轉卡片
+    function flipCard() {
+      if (!isFlipped) {
+        document.getElementById('tarot-card').classList.add('flipped');
+        isFlipped = true;
+      }
+    }
+
+    window.onload = function() {
+      setRandomCard();
+    };
+
+    // 煙霧背景動畫
+    const canvas = document.getElementById('smoke-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 35;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class SmokeParticle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 150 + 100;
+        this.speedX = Math.random() * 0.2 - 0.1;
+        this.speedY = Math.random() * 0.15 - 0.07;
+        this.alpha = Math.random() * 0.12 + 0.04;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = Math.random() * 0.002 - 0.001;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.angle += this.spin;
+        if (this.x < -this.size || this.x > canvas.width + this.size) this.speedX *= -1;
+        if (this.y < -this.size || this.y > canvas.height + this.size) this.speedY *= -1;
+      }
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        let gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+        gradient.addColorStop(0, `rgba(120, 120, 120, ${this.alpha})`);
+        gradient.addColorStop(0.5, `rgba(90, 90, 90, ${this.alpha * 0.3})`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new SmokeParticle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
